@@ -16,3 +16,15 @@ iwr "https://raw.githubusercontent.com/ltx0101/NVCacheCleaner/main/NVCacheCleane
 iwr "https://raw.githubusercontent.com/ltx0101/NVCacheCleaner/main/NVCacheCleaner.ps1" -OutFile "$env:USERPROFILE\Desktop\NVCacheCleaner.ps1"
 powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\Desktop\NVCacheCleaner.ps1"
 ```
+---
+<div align="center">
+   
+[![PayPal Donate](https://img.shields.io/badge/PayPal_Donate-s?style=for-the-badge&logo=paypal&logoColor=black)](https://paypal.me/AggelosMeta)
+
+</div>
+
+<div align="center">
+  
+Made with ❤️ and PowerShell  
+
+</div>
