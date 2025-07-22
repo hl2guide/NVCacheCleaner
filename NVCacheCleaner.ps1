@@ -1,4 +1,4 @@
-﻿if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`"" -Verb RunAs
     exit
 }
@@ -16,7 +16,7 @@ function Stop-NVIDIAComponents {
         "NVIDIA Display Service",
         "NVIDIA FrameView SDK service"
     )
-    
+
     foreach ($service in $servicesToStop) {
         try {
             $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
@@ -33,16 +33,16 @@ function Stop-NVIDIAComponents {
     }
 
     $nvidiaProcesses = @(
-        "nvcontainer", 
-        "nvidia share", 
-        "nvidia web helper", 
-        "nvidia telemetry", 
+        "nvcontainer",
+        "nvidia share",
+        "nvidia web helper",
+        "nvidia telemetry",
         "nvidia display container",
         "nvidia broadcast",
         "nvidia geforce experience",
         "nvidia overlay"
     )
-    
+
     foreach ($process in $nvidiaProcesses) {
         try {
             $procs = Get-Process -Name $process -ErrorAction SilentlyContinue
@@ -61,13 +61,13 @@ function Stop-NVIDIAComponents {
             Write-Host "Could not stop process $process : $_" -ForegroundColor DarkYellow
         }
     }
-    
+
     Start-Sleep -Seconds 3
 }
 
 function Restore-NVIDIAComponents {
     Write-Host "`nRestoring NVIDIA components..." -ForegroundColor Yellow
-    
+
     foreach ($service in $global:stoppedServices) {
         try {
             Start-Service -Name $service -ErrorAction Stop
@@ -77,7 +77,7 @@ function Restore-NVIDIAComponents {
             Write-Host "Could not restart service $service : $_" -ForegroundColor Red
         }
     }
-    
+
     Write-Host "NVIDIA processes will restart automatically when needed." -ForegroundColor Cyan
 }
 
@@ -87,10 +87,10 @@ function Remove-FileWithRetry {
         [int]$MaxRetries = 3,
         [int]$RetryDelay = 1000
     )
-    
+
     $retryCount = 0
     $success = $false
-    
+
     while (-not $success -and $retryCount -lt $MaxRetries) {
         try {
             if (Test-Path $Path) {
@@ -108,22 +108,22 @@ function Remove-FileWithRetry {
             }
         }
     }
-    
+
     if (-not $success) {
         Write-Host "Failed to delete after $MaxRetries attempts: $Path" -ForegroundColor Red
         return $false
     }
 }
 
-function Clean-CacheDirectory {
+function Invoke-CleanCacheDirectory {
     param (
         [string]$Path,
         [switch]$PreserveStructure
     )
-    
+
     if (Test-Path $Path) {
         Write-Host "Cleaning cache at: $Path" -ForegroundColor Yellow
-        
+
         try {
             if ($PreserveStructure) {
                 Get-ChildItem -Path $Path -Force -ErrorAction SilentlyContinue | ForEach-Object {
@@ -133,7 +133,7 @@ function Clean-CacheDirectory {
             else {
                 Remove-FileWithRetry -Path $Path
             }
-            
+
             Write-Host "Successfully cleaned: $Path" -ForegroundColor Green
             return $true
         }
@@ -152,7 +152,7 @@ function Test-CleanupResult {
     param (
         [string]$Path
     )
-    
+
     if (Test-Path $Path) {
         $remainingItems = @(Get-ChildItem -Path $Path -Force -ErrorAction SilentlyContinue)
         if ($remainingItems.Count -gt 0) {
@@ -181,7 +181,7 @@ try {
         "${env:PROGRAMDATA}\NVIDIA Corporation\Downloader",
         "${env:ProgramData}\NVIDIA Corporation\GeForce Experience\Caches"
     )
-    
+
     $shaderCachePaths = @(
         "${env:LOCALAPPDATA}\D3DSCache",
         "${env:LOCALAPPDATA}\AMD\DxCache",
@@ -192,15 +192,15 @@ try {
     $allCachePaths = $nvidiaCachePaths + $shaderCachePaths
     $cleanupResults = @{}
     foreach ($path in $allCachePaths) {
-        $cleanupResults[$path] = Clean-CacheDirectory -Path $path -PreserveStructure
+        $cleanupResults[$path] = Invoke-CleanCacheDirectory -Path $path -PreserveStructure
     }
 
     $nvidiaDriverStore = "${env:ProgramFiles}\NVIDIA Corporation\Installer2"
     if (Test-Path $nvidiaDriverStore) {
         try {
             Write-Host "Cleaning NVIDIA driver store at: $nvidiaDriverStore" -ForegroundColor Yellow
-            Get-ChildItem -Path $nvidiaDriverStore -Filter "*" -Directory | 
-                Where-Object { $_.Name -ne "Display.Driver" } | 
+            Get-ChildItem -Path $nvidiaDriverStore -Filter "*" -Directory |
+                Where-Object { $_.Name -ne "Display.Driver" } |
                 ForEach-Object {
                     Remove-FileWithRetry -Path $_.FullName
                 }
@@ -226,7 +226,7 @@ try {
 
     try {
         Write-Host "Cleaning Windows Temp folders..." -ForegroundColor Yellow
-        Get-ChildItem -Path $env:TEMP, "${env:WINDIR}\Temp" -Recurse -Force -ErrorAction SilentlyContinue | 
+        Get-ChildItem -Path $env:TEMP, "${env:WINDIR}\Temp" -Recurse -Force -ErrorAction SilentlyContinue |
             Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
         Write-Host "Windows Temp folders cleaned" -ForegroundColor Green
     }
