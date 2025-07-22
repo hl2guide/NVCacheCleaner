@@ -243,7 +243,7 @@ finally {
     Restore-NVIDIAComponents
 }
 
-cls
+Clear-Host
 Write-Host "`nShader and NVIDIA cache cleanup completed." -ForegroundColor Green
 Write-Host "Note: Some files might still be in use and couldn't be deleted." -ForegroundColor Yellow
 Write-Host "For complete cleanup, boot in Safe mode and run the script again." -ForegroundColor Yellow
